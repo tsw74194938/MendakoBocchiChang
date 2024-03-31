@@ -1,4 +1,5 @@
 import { Application, Assets, Sprite } from 'pixi.js';
+import bocchiChang from '/img/bocchi-chang.png';
 
 const app = new Application();
 
@@ -10,7 +11,7 @@ async function init() {
   });
   document.body.appendChild(app.canvas);
 
-  const texture = await Assets.load('./img/bocchi-chang.png');
+  const texture = await Assets.load(bocchiChang);
   const sprite = Sprite.from(texture);
   sprite.anchor.set(0.5, 0.5);
   sprite.x = app.screen.width / 2;
