@@ -1,26 +1,28 @@
 import { Application, Assets, Sprite } from 'pixi.js';
+import { config as designConfig, resizeIfNeeded } from './resize';
 import bocchiChang from '/img/bocchi-chang.png';
 
 const app = new Application();
 
 async function init() {
   await app.init({
-    width: 600,
-    height: 600,
+    width: designConfig.maxWidth,
+    height: designConfig.maxWidth / designConfig.aspectRatio,
     backgroundColor: 0xabcfb5,
   });
   document.body.appendChild(app.canvas);
 
-  const texture = await Assets.load(bocchiChang);
-  const sprite = Sprite.from(texture);
-  sprite.anchor.set(0.5, 0.5);
-  sprite.x = app.screen.width / 2;
-  sprite.y = app.screen.height / 2;
-  app.stage.addChild(sprite);
-
-  app.ticker.add((time) => {
-    sprite.rotation -= 0.05 * time.deltaTime;
+  resizeIfNeeded(app);
+  window.addEventListener('resize', (_) => {
+    resizeIfNeeded(app);
   });
+
+  const bocchi = Sprite.from(await Assets.load(bocchiChang));
+  bocchi.anchor.set(0.5, 0.5);
+  bocchi.scale = 0.7;
+  bocchi.x = app.screen.width / app.stage.scale.x / 2;
+  bocchi.y = app.screen.height / app.stage.scale.y / 2;
+  app.stage.addChild(bocchi);
 }
 
 init();

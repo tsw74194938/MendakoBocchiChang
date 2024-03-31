@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc && vite build --base=/games/mendako-bocchi-chang/",
     "preview": "vite preview",
     "format": "npx prettier . --write"
