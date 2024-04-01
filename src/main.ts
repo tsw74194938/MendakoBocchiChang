@@ -12,14 +12,29 @@ async function init() {
     height: designConfig.maxWidth / designConfig.aspectRatio,
     backgroundColor: 0xabcfb5,
   });
+
   document.getElementById('app')?.appendChild(app.canvas);
+
+  const manifest = {
+    bundles: [
+      {
+        name: 'main',
+        assets: [
+          { alias: 'bocchiTexture', src: bocchiChang },
+          { alias: 'touchSound', src: touchSound },
+        ],
+      },
+    ],
+  };
+  await Assets.init({ manifest: manifest });
+  Assets.backgroundLoadBundle(['main']);
 
   resizeIfNeeded(app);
   window.addEventListener('resize', (_) => {
     resizeIfNeeded(app);
   });
 
-  const bocchi = Sprite.from(await Assets.load(bocchiChang));
+  const bocchi = Sprite.from(await Assets.load('bocchiTexture'));
   bocchi.anchor.set(0.5, 0.5);
   bocchi.scale = 0.7;
   bocchi.x = app.screen.width / app.stage.scale.x / 2;
@@ -31,8 +46,8 @@ async function init() {
   bocchi.ontouchstart = onTouch;
 }
 
-function onTouch() {
-  const sound = Sound.from(touchSound);
+async function onTouch() {
+  const sound = Sound.from(await Assets.load('touchSound'));
   sound.resume();
   sound.play();
 }
