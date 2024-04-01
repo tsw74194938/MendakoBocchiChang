@@ -1,6 +1,7 @@
 import { Application, Assets, Sprite } from 'pixi.js';
 import { Sound } from '@pixi/sound';
 import { config as designConfig, resizeIfNeeded } from './resize';
+import { jump } from './jump';
 import bocchiChang from '/img/bocchi-chang.png';
 import touchSound from '/audio/bocchi-touch.mp3';
 
@@ -42,11 +43,19 @@ async function init() {
   app.stage.addChild(bocchi);
 
   bocchi.interactive = true;
-  bocchi.onclick = onTouch;
-  bocchi.ontouchstart = onTouch;
+  bocchi.onclick = (_) => {
+    onTouch(bocchi);
+  };
+  bocchi.ontouchstart = (_) => {
+    onTouch(bocchi);
+  };
 }
 
-async function onTouch() {
+async function onTouch(bocchi: Sprite) {
+  jump(app.screen.height / app.stage.scale.y / 2, (y) => {
+    bocchi.y = y;
+  });
+
   const sound = Sound.from(await Assets.load('touchSound'));
   sound.resume();
   sound.play();
