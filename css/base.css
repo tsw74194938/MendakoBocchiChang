@@ -2,10 +2,59 @@ html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
+
+  font-size: 1rem;
+  font-family:
+    Inter,
+    GenJyuuGothicL,
+    Hiragino Kaku Gothic ProN,
+    Hiragino Sans,
+    Meiryo,
+    sans-serif;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
 }
 
 canvas {
   display: block;
   margin-left: auto;
   margin-right: auto;
+}
+
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: sticky;
+  top: 100vh;
+  top: 100dvh;
+
+  height: 3rem;
+  background-color: #1c1c1e;
+  color: #ffffff;
+}
+
+footer a:link {
+  color: #0a84ffff;
+}
+
+footer a:visited {
+  color: #5e5ce6ff;
+}
+
+footer a:hover {
+  color: #ff9f0aff;
+}
+
+footer a:active {
+  color: #ff375fff;
+}
+
+footer img {
+  position: absolute;
+  height: 1.5rem;
+  bottom: calc((3rem - 1.5rem) / 2);
+  right: 1rem;
 }

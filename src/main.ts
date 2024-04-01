@@ -10,7 +10,7 @@ async function init() {
     height: designConfig.maxWidth / designConfig.aspectRatio,
     backgroundColor: 0xabcfb5,
   });
-  document.body.appendChild(app.canvas);
+  document.getElementById('app')?.appendChild(app.canvas);
 
   resizeIfNeeded(app);
   window.addEventListener('resize', (_) => {
