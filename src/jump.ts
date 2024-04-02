@@ -1,11 +1,15 @@
 import { Ticker } from 'pixi.js';
 
 let jumping = false;
-const gravity = 1;
-const power = 15;
 let tick: (ticker: Ticker) => void;
 
-export function jump(from: number, onUpdateY: (_: number) => void) {
+export function jump(
+  from: number,
+  gravity: number = 1,
+  power: number = 15,
+  onUpdateY: (_: number) => void,
+  onComplete: () => void = () => {},
+) {
   if (jumping) {
     Ticker.shared.remove(tick);
     onUpdateY(from);
@@ -21,6 +25,7 @@ export function jump(from: number, onUpdateY: (_: number) => void) {
       jumping = false;
       Ticker.shared.remove(tick);
       onUpdateY(from);
+      onComplete();
       return;
     }
 
