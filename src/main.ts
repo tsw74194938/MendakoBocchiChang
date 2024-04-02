@@ -5,6 +5,7 @@ import { jump } from './jump';
 import imgBocchiChang from '/img/bocchi-chang.png';
 import imgKaraage from '/img/karaage.png';
 import imgKaraageBtn from '/img/karaage-btn.png';
+import imgBocchiHouse from '/img/bocchi-house.png';
 import audioTouch from '/audio/bocchi-touch.mp3';
 import audioPakuPaku from '/audio/bocchi-pakupaku.mp3';
 import audioPop from '/audio/karaage-pop.mp3';
@@ -21,7 +22,7 @@ async function init() {
   await app.init({
     width: designConfig.maxWidth,
     height: designConfig.maxWidth / designConfig.aspectRatio,
-    backgroundColor: 0xabcfb5,
+    backgroundColor: '#ffffff',
   });
 
   document.getElementById('app')?.appendChild(app.canvas);
@@ -31,6 +32,7 @@ async function init() {
       {
         name: 'main',
         assets: [
+          { alias: 'house', src: imgBocchiHouse },
           { alias: 'bocchi', src: imgBocchiChang },
           { alias: 'karaage', src: imgKaraage },
           { alias: 'karaageButton', src: imgKaraageBtn },
@@ -92,6 +94,10 @@ async function init() {
 
   pakupakuSound = Sound.from(await Assets.load('pakupakuSound'));
   touchSound = Sound.from(await Assets.load('touchSound'));
+
+  const bg = Sprite.from(await Assets.load('house'));
+  bg.interactive = false;
+  app.stage.addChild(bg);
 
   app.stage.addChild(bocchi);
   app.stage.addChild(karaageButton);
