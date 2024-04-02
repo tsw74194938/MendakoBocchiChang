@@ -67,10 +67,9 @@ async function init() {
   // KaraageButton
   //================
   karaageButton = Sprite.from(await Assets.load('karaageButton'));
-  karaageButton.anchor.set(1, 0);
   karaageButton.scale = 0.5;
   karaageButton.interactive = true;
-  karaageButton.x = app.screen.width / app.stage.scale.x - 18;
+  karaageButton.x = 18;
   karaageButton.y = 18;
   karaageButton.onclick = onTouchKaraageButton;
   karaageButton.ontouchstart = onTouchKaraageButton;
@@ -80,8 +79,6 @@ async function init() {
   //================
   karaage = Sprite.from(await Assets.load('karaage'));
   karaage.scale = 0.5;
-  karaage.x = 100;
-  karaage.y = 100;
   karaage.interactive = true;
   karaage.eventMode = 'static';
   karaage.cursor = 'pointer';
@@ -113,8 +110,8 @@ async function onTouchBocchi() {
 async function onTouchKaraageButton() {
   isKaraageMode = !isKaraageMode;
   if (isKaraageMode) {
-    karaage.x = 100;
-    karaage.y = 100;
+    karaage.x = 250;
+    karaage.y = 80;
     Sound.from(await Assets.load('popSound')).play();
     app.stage.addChild(karaage);
   } else {
