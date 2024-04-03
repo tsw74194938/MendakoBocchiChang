@@ -3,13 +3,7 @@ import { Sound } from '@pixi/sound';
 import { config as designConfig, resizeIfNeeded } from './resize';
 import { jump, jumpSync } from './jump';
 import { sleep } from './util';
-import imgBocchiChang from '/img/bocchi-chang.png';
-import imgKaraage from '/img/karaage.png';
-import imgKaraageBtn from '/img/karaage-btn.png';
-import imgBocchiHouse from '/img/bocchi-house.png';
-import audioTouch from '/audio/bocchi-touch.mp3';
-import audioPakuPaku from '/audio/bocchi-pakupaku.mp3';
-import audioPop from '/audio/karaage-pop.mp3';
+import manifest from './manifest.json';
 
 let bocchi: Sprite;
 let karaage: Sprite;
@@ -28,22 +22,8 @@ async function init() {
 
   document.getElementById('app')?.appendChild(app.canvas);
 
-  const manifest = {
-    bundles: [
-      {
-        name: 'main',
-        assets: [
-          { alias: 'house', src: imgBocchiHouse },
-          { alias: 'bocchi', src: imgBocchiChang },
-          { alias: 'karaage', src: imgKaraage },
-          { alias: 'karaageButton', src: imgKaraageBtn },
-          { alias: 'touchSound', src: audioTouch },
-          { alias: 'pakupakuSound', src: audioPakuPaku },
-          { alias: 'popSound', src: audioPop },
-        ],
-      },
-    ],
-  };
+  // アセット群を事前に読み込む
+  // SeeAlso: https://pixijs.com/8.x/guides/components/assets
   await Assets.init({ manifest: manifest });
   Assets.backgroundLoadBundle(['main']);
 

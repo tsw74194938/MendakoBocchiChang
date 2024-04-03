@@ -1,0 +1,37 @@
+{
+  "bundles": [
+    {
+      "name": "main",
+      "assets": [
+        {
+          "alias": "house",
+          "src": "img/bocchi-house.png"
+        },
+        {
+          "alias": "bocchi",
+          "src": "img/bocchi-chang.png"
+        },
+        {
+          "alias": "karaage",
+          "src": "img/karaage.png"
+        },
+        {
+          "alias": "karaageButton",
+          "src": "img/karaage-btn.png"
+        },
+        {
+          "alias": "touchSound",
+          "src": "audio/bocchi-touch.mp3"
+        },
+        {
+          "alias": "pakupakuSound",
+          "src": "audio/bocchi-pakupaku.mp3"
+        },
+        {
+          "alias": "popSound",
+          "src": "audio/karaage-pop.mp3"
+        }
+      ]
+    }
+  ]
+}
