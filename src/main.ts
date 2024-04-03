@@ -8,8 +8,6 @@ import manifest from './manifest.json';
 let bocchi: Sprite;
 let karaage: Sprite;
 let karaageButton: Sprite;
-let pakupakuSound: Sound;
-let touchSound: Sound;
 let isKaraageMode = false;
 const app = new Application();
 
@@ -70,9 +68,6 @@ async function init() {
 
   //================
 
-  pakupakuSound = Sound.from(await Assets.load('pakupakuSound'));
-  touchSound = Sound.from(await Assets.load('touchSound'));
-
   const bg = Sprite.from(await Assets.load('house'));
   bg.interactive = false;
   app.stage.addChild(bg);
@@ -82,10 +77,10 @@ async function init() {
 }
 
 async function onTouchBocchi() {
+  Sound.from(await Assets.load('touchSound')).play();
   jump(1, 15, app.screen.height / app.stage.scale.y / 2, (y) => {
     bocchi.y = y;
   });
-  touchSound.play();
 }
 
 async function onTouchKaraageButton() {
@@ -121,6 +116,9 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
   app.stage.onpointerupoutside = null;
 
   if (bocchi.containsPoint(event.getLocalPosition(bocchi, undefined, event.global))) {
+    const pakupakuSound = Sound.from(await Assets.load('pakupakuSound'));
+    const touchSound = Sound.from(await Assets.load('touchSound'));
+
     // 事前処理
     karaage.interactive = false;
     karaageButton.interactive = false;
