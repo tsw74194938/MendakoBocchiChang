@@ -192,18 +192,18 @@ function onDragKaraageEnd(event: FederatedPointerEvent) {
                               karaage.interactive = true;
                               karaageButton.interactive = true;
                               bocchi.interactive = true;
-                            },
+                            }
                           );
                         }, 200);
                         app.stage.removeChild(karaage);
                       }, 500);
-                    },
+                    }
                   );
                 }, 200);
-              },
+              }
             );
           }, 200);
-        },
+        }
       );
     }, 200);
   }
@@ -212,11 +212,11 @@ function onDragKaraageEnd(event: FederatedPointerEvent) {
 function snapKaraage(obj: Sprite) {
   obj.position.x = Math.min(
     Math.max(obj.position.x, obj.width / 2),
-    app.screen.width / app.stage.scale.x - obj.width / 2,
+    app.screen.width / app.stage.scale.x - obj.width / 2
   );
   obj.position.y = Math.min(
     Math.max(obj.position.y, obj.height / 2),
-    app.screen.height / app.stage.scale.y - obj.height / 2,
+    app.screen.height / app.stage.scale.y - obj.height / 2
   );
 }
 

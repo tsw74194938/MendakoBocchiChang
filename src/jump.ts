@@ -8,7 +8,7 @@ export function jump(
   gravity: number = 1,
   power: number = 15,
   onUpdateY: (_: number) => void,
-  onComplete: () => void = () => {},
+  onComplete: () => void = () => {}
 ) {
   if (jumping) {
     Ticker.shared.remove(tick);
