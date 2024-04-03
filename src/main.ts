@@ -1,7 +1,8 @@
 import { Application, Assets, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { Sound } from '@pixi/sound';
 import { config as designConfig, resizeIfNeeded } from './resize';
-import { jump } from './jump';
+import { jump, jumpSync } from './jump';
+import { sleep } from './util';
 import imgBocchiChang from '/img/bocchi-chang.png';
 import imgKaraage from '/img/karaage.png';
 import imgKaraageBtn from '/img/karaage-btn.png';
@@ -101,7 +102,7 @@ async function init() {
 }
 
 async function onTouchBocchi() {
-  jump(app.screen.height / app.stage.scale.y / 2, 1, 15, (y) => {
+  jump(1, 15, app.screen.height / app.stage.scale.y / 2, (y) => {
     bocchi.y = y;
   });
   touchSound.play();
@@ -132,7 +133,7 @@ function onDragKaraageMove(event: FederatedPointerEvent) {
   karaage.parent.toLocal(event.global, undefined, karaage.position);
 }
 
-function onDragKaraageEnd(event: FederatedPointerEvent) {
+async function onDragKaraageEnd(event: FederatedPointerEvent) {
   snapKaraage(karaage);
 
   app.stage.onpointermove = null;
@@ -140,72 +141,52 @@ function onDragKaraageEnd(event: FederatedPointerEvent) {
   app.stage.onpointerupoutside = null;
 
   if (bocchi.containsPoint(event.getLocalPosition(bocchi, undefined, event.global))) {
+    // 事前処理
     karaage.interactive = false;
     karaageButton.interactive = false;
     bocchi.interactive = false;
 
+    // 唐揚げを口に運ぶ
     karaage.y = bocchi.y + 60;
     karaage.x = bocchi.x;
 
-    setTimeout(() => {
-      pakupakuSound.play();
-      jump(
-        app.screen.height / app.stage.scale.y / 2,
-        1,
-        8,
-        (y) => {
-          bocchi.y = y;
-        },
-        () => {
-          setTimeout(() => {
-            pakupakuSound.play();
-            jump(
-              app.screen.height / app.stage.scale.y / 2,
-              1,
-              8,
-              (y) => {
-                bocchi.y = y;
-              },
-              () => {
-                setTimeout(() => {
-                  pakupakuSound.play();
-                  jump(
-                    app.screen.height / app.stage.scale.y / 2,
-                    1,
-                    8,
-                    (y) => {
-                      bocchi.y = y;
-                    },
-                    () => {
-                      setTimeout(() => {
-                        setTimeout(() => {
-                          touchSound.play();
-                          jump(
-                            app.screen.height / app.stage.scale.y / 2,
-                            1,
-                            15,
-                            (y) => {
-                              bocchi.y = y;
-                            },
-                            () => {
-                              isKaraageMode = false;
-                              karaage.interactive = true;
-                              karaageButton.interactive = true;
-                              bocchi.interactive = true;
-                            }
-                          );
-                        }, 200);
-                        app.stage.removeChild(karaage);
-                      }, 500);
-                    }
-                  );
-                }, 200);
-              }
-            );
-          }, 200);
-        }
-      );
-    }, 200);
+    // パク
+    await sleep(200);
+    pakupakuSound.play();
+    await jumpSync(1, 8, app.screen.height / app.stage.scale.y / 2, (y) => {
+      bocchi.y = y;
+    });
+
+    // パク
+    await sleep(200);
+    pakupakuSound.play();
+    await jumpSync(1, 8, app.screen.height / app.stage.scale.y / 2, (y) => {
+      bocchi.y = y;
+    });
+
+    // パク
+    await sleep(200);
+    pakupakuSound.play();
+    await jumpSync(1, 8, app.screen.height / app.stage.scale.y / 2, (y) => {
+      bocchi.y = y;
+    });
+
+    // ごっくん
+    await sleep(500);
+    app.stage.removeChild(karaage);
+
+    // ジャンプ
+    await sleep(200);
+    touchSound.play();
+    await jumpSync(1, 15, app.screen.height / app.stage.scale.y / 2, (y) => {
+      bocchi.y = y;
+    });
+
+    // 事後処理
+    isKaraageMode = false;
+    karaage.interactive = true;
+    karaageButton.interactive = true;
+    bocchi.interactive = true;
   }
 }
 
