@@ -1,6 +1,6 @@
 import { Application, Assets, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { Sound } from '@pixi/sound';
-import { config as designConfig, resizeIfNeeded } from './resize';
+import { config as designConfig, originalStageHeight, originalStageWidth, resizeIfNeeded } from './resize';
 import { jump, jumpSync } from './jump';
 import { sleep } from './util';
 import manifest from './manifest.json';
@@ -10,6 +10,13 @@ let karaage: Sprite;
 let karaageButton: Sprite;
 let isKaraageMode = false;
 const app = new Application();
+
+const stageWidth = (): number => {
+  return originalStageWidth(app);
+};
+const stageHeight = (): number => {
+  return originalStageHeight(app);
+};
 
 async function init() {
   await app.init({
@@ -37,8 +44,8 @@ async function init() {
   bocchi.anchor.set(0.5, 0.5);
   bocchi.scale = 0.7;
   bocchi.interactive = true;
-  bocchi.x = app.screen.width / app.stage.scale.x / 2;
-  bocchi.y = app.screen.height / app.stage.scale.y / 2;
+  bocchi.x = stageWidth() / 2;
+  bocchi.y = stageHeight() / 2;
   bocchi.onclick = onTouchBocchi;
   bocchi.ontouchstart = onTouchBocchi;
 
@@ -132,21 +139,21 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
     // パク
     await sleep(200);
     pakupakuSound.play();
-    await jumpSync(1, 8, app.screen.height / app.stage.scale.y / 2, (y) => {
+    await jumpSync(1, 8, stageHeight() / 2, (y) => {
       bocchi.y = y;
     });
 
     // パク
     await sleep(200);
     pakupakuSound.play();
-    await jumpSync(1, 8, app.screen.height / app.stage.scale.y / 2, (y) => {
+    await jumpSync(1, 8, stageHeight() / 2, (y) => {
       bocchi.y = y;
     });
 
     // パク
     await sleep(200);
     pakupakuSound.play();
-    await jumpSync(1, 8, app.screen.height / app.stage.scale.y / 2, (y) => {
+    await jumpSync(1, 8, stageHeight() / 2, (y) => {
       bocchi.y = y;
     });
 
@@ -157,7 +164,7 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
     // ジャンプ
     await sleep(200);
     touchSound.play();
-    await jumpSync(1, 15, app.screen.height / app.stage.scale.y / 2, (y) => {
+    await jumpSync(1, 15, stageHeight() / 2, (y) => {
       bocchi.y = y;
     });
 
@@ -170,14 +177,8 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
 }
 
 function snapKaraage(obj: Sprite) {
-  obj.position.x = Math.min(
-    Math.max(obj.position.x, obj.width / 2),
-    app.screen.width / app.stage.scale.x - obj.width / 2
-  );
-  obj.position.y = Math.min(
-    Math.max(obj.position.y, obj.height / 2),
-    app.screen.height / app.stage.scale.y - obj.height / 2
-  );
+  obj.position.x = Math.min(Math.max(obj.position.x, obj.width / 2), stageWidth() - obj.width / 2);
+  obj.position.y = Math.min(Math.max(obj.position.y, obj.height / 2), stageHeight() - obj.height / 2);
 }
 
 init();

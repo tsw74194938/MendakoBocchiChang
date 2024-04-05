@@ -11,16 +11,16 @@ export const config = {
  * @param width リサイズ後の横幅
  * @param app リサイズ対象のアプリ
  */
-function resize(width: number, app: Application) {
+const resize = (width: number, app: Application) => {
   app.renderer.resize(width, width / config.aspectRatio);
   app.stage.scale = width / config.maxWidth;
-}
+};
 
 /**
  * ウインドウサイズの更新時に呼び出され、必要であれば描画領域のリサイズを行う
  * @param app リサイズ対象のアプリ
  */
-export function resizeIfNeeded(app: Application) {
+export const resizeIfNeeded = (app: Application) => {
   if (window.innerWidth > config.maxWidth) {
     if (app.stage.width != config.maxWidth) {
       resize(config.maxWidth, app);
@@ -32,4 +32,20 @@ export function resizeIfNeeded(app: Application) {
   } else {
     resize(window.innerWidth, app);
   }
-}
+};
+
+/**
+ * @param app リサイズ対象のアプリ
+ * @returns リサイズ前のStageの横幅
+ */
+export const originalStageWidth = (app: Application): number => {
+  return app.screen.width / app.stage.scale.x;
+};
+
+/**
+ * @param app リサイズ対象のアプリ
+ * @returns リサイズ前のStageの縦幅
+ */
+export const originalStageHeight = (app: Application): number => {
+  return app.screen.height / app.stage.scale.y;
+};
