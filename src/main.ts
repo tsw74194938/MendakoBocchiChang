@@ -2,11 +2,12 @@ import { Application, Assets, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { Sound } from '@pixi/sound';
 import { config as designConfig, originalStageHeight, originalStageWidth, resizeIfNeeded } from './resize';
 import { jump, jumpSync } from './jump';
-import { sleep } from './util';
+import { calcSnappedPosition, sleep } from './util';
 import manifest from './manifest.json';
+import { Karaage } from './karaage';
 
 let bocchi: Sprite;
-let karaage: Sprite;
+let karaage: Karaage;
 let karaageButton: Sprite;
 let isKaraageMode = false;
 const app = new Application();
@@ -24,6 +25,7 @@ async function init() {
     height: designConfig.maxWidth / designConfig.aspectRatio,
     backgroundColor: '#ffffff',
   });
+  app.stage.interactive = true;
 
   document.getElementById('app')?.appendChild(app.canvas);
 
@@ -63,15 +65,9 @@ async function init() {
   //================
   // Karaage
   //================
-  karaage = Sprite.from(await Assets.load('karaage'));
-  karaage.scale = 0.5;
-  karaage.interactive = true;
-  karaage.eventMode = 'static';
-  karaage.cursor = 'pointer';
-  karaage.anchor.set(0.5, 0.5);
-  karaage.onpointerdown = (_) => {
-    onDragKaraageStart();
-  };
+  let karaageTexture = await Assets.load('karaage');
+  karaage = new Karaage(karaageTexture);
+  karaage.onDragged = onDragKaraageEnd;
 
   //================
 
@@ -92,36 +88,24 @@ async function onTouchBocchi() {
 
 async function onTouchKaraageButton() {
   if (isKaraageMode) {
-    app.stage.removeChild(karaage);
-    app.stage.onpointermove = null;
-    app.stage.onpointerup = null;
-    app.stage.onpointerupoutside = null;
+    karaage.removeFromParent();
   }
-
   isKaraageMode = true;
-
   karaage.x = 250;
   karaage.y = 80;
-  Sound.from(await Assets.load('popSound')).play();
-  app.stage.addChild(karaage);
-}
-
-function onDragKaraageStart() {
-  app.stage.onpointermove = onDragKaraageMove;
-  app.stage.onpointerup = onDragKaraageEnd;
-  app.stage.onpointerupoutside = onDragKaraageEnd;
-}
-
-function onDragKaraageMove(event: FederatedPointerEvent) {
-  karaage.parent.toLocal(event.global, undefined, karaage.position);
+  karaage.addToParent(app.stage);
 }
 
 async function onDragKaraageEnd(event: FederatedPointerEvent) {
-  snap(karaage);
-
-  app.stage.onpointermove = null;
-  app.stage.onpointerup = null;
-  app.stage.onpointerupoutside = null;
+  const position = calcSnappedPosition(
+    {
+      width: stageWidth(),
+      height: stageHeight(),
+    },
+    karaage.snapInfo
+  );
+  karaage.x = position.x;
+  karaage.y = position.y;
 
   if (bocchi.containsPoint(event.getLocalPosition(bocchi, undefined, event.global))) {
     const pakupakuSound = Sound.from(await Assets.load('pakupakuSound'));
@@ -159,7 +143,7 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
 
     // ごっくん
     await sleep(500);
-    app.stage.removeChild(karaage);
+    karaage.removeFromParent();
 
     // ジャンプ
     await sleep(200);
@@ -175,14 +159,5 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
     bocchi.interactive = true;
   }
 }
-
-/**
- * オブジェクトの位置をstage枠内に収まるように調整する
- * @param obj 調整対象のオブジェクト
- */
-const snap = (obj: Sprite) => {
-  obj.x = Math.min(Math.max(obj.x, obj.width * obj.anchor._x), stageWidth() - obj.width * (1 - obj.anchor._x));
-  obj.y = Math.min(Math.max(obj.y, obj.height * obj.anchor._y), stageHeight() - obj.height * (1 - obj.anchor._y));
-};
 
 init();
