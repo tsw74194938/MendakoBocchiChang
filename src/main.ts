@@ -117,7 +117,7 @@ function onDragKaraageMove(event: FederatedPointerEvent) {
 }
 
 async function onDragKaraageEnd(event: FederatedPointerEvent) {
-  snapKaraage(karaage);
+  snap(karaage);
 
   app.stage.onpointermove = null;
   app.stage.onpointerup = null;
@@ -176,9 +176,13 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
   }
 }
 
-function snapKaraage(obj: Sprite) {
-  obj.position.x = Math.min(Math.max(obj.position.x, obj.width / 2), stageWidth() - obj.width / 2);
-  obj.position.y = Math.min(Math.max(obj.position.y, obj.height / 2), stageHeight() - obj.height / 2);
-}
+/**
+ * オブジェクトの位置をstage枠内に収まるように調整する
+ * @param obj 調整対象のオブジェクト
+ */
+const snap = (obj: Sprite) => {
+  obj.x = Math.min(Math.max(obj.x, obj.width * obj.anchor._x), stageWidth() - obj.width * (1 - obj.anchor._x));
+  obj.y = Math.min(Math.max(obj.y, obj.height * obj.anchor._y), stageHeight() - obj.height * (1 - obj.anchor._y));
+};
 
 init();
