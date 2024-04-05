@@ -7,7 +7,7 @@ import manifest from './manifest.json';
 
 let bocchi: Bocchi;
 let karaageButton: Sprite;
-let karaageCount = 0;
+let karaages: Karaage[] = [];
 let isBocchiEating = false;
 const MAX_KARAAGE_COUNT = 10;
 const app = new Application();
@@ -26,6 +26,7 @@ async function init() {
     backgroundColor: '#ffffff',
   });
   app.stage.interactive = true;
+  app.stage.sortableChildren = true;
 
   document.getElementById('app')?.appendChild(app.canvas);
 
@@ -69,7 +70,7 @@ async function init() {
 }
 
 async function onTouchKaraageButton() {
-  if (karaageCount > MAX_KARAAGE_COUNT - 1) {
+  if (karaages.length > MAX_KARAAGE_COUNT - 1) {
     return;
   }
 
@@ -78,11 +79,24 @@ async function onTouchKaraageButton() {
   karaage.x = 250;
   karaage.y = 80;
   karaage.addToParent(app.stage);
-  karaage.onDragged = onDragKaraageEnd;
-  karaageCount += 1;
+  karaage.onDragStart = onDragKaraageStart;
+  karaage.onDragEnd = onDragKaraageEnd;
+  karaages.push(karaage);
 }
 
-async function onDragKaraageEnd(karaage: Karaage, event: FederatedPointerEvent) {
+const onDragKaraageStart = (karaage: Karaage, _: FederatedPointerEvent) => {
+  const zIndices = karaages.map((k) => k.zIndex);
+  const frontmostKaraageIndex = zIndices.indexOf(Math.max(...zIndices));
+
+  // デフォルトだとzIndexは0なので、最も手前のzIndex値が0だった場合は、1にすることで最前面に来るようにする
+  const topZIndex = karaages[frontmostKaraageIndex].zIndex == 0 ? 1 : karaages[frontmostKaraageIndex].zIndex;
+
+  // 手前の唐揚げとタップされた唐揚げで、zIndexを交換する
+  karaages[frontmostKaraageIndex].zIndex = karaage.zIndex;
+  karaage.zIndex = topZIndex;
+};
+
+const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) => {
   if (isBocchiEating) {
     return;
   }
@@ -119,13 +133,13 @@ async function onDragKaraageEnd(karaage: Karaage, event: FederatedPointerEvent) 
     await bocchi.pyon();
     await sleep(200);
 
-    karaageCount -= 1;
+    karaages = karaages.filter((k) => k !== karaage);
 
     // 事後処理
     isBocchiEating = false;
     karaage.interactive = true;
     bocchi.interactive = true;
   }
-}
+};
 
 init();

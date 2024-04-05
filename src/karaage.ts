@@ -7,7 +7,8 @@ import { SnapTarget } from './util';
  */
 export class Karaage {
   private view: Sprite;
-  onDragged: (karaage: Karaage, event: FederatedPointerEvent) => void = (_) => {};
+  onDragStart: (karaage: Karaage, event: FederatedPointerEvent) => void = (_) => {};
+  onDragEnd: (karaage: Karaage, event: FederatedPointerEvent) => void = (_) => {};
 
   constructor(texture: Texture) {
     this.view = Sprite.from(texture);
@@ -17,7 +18,7 @@ export class Karaage {
     this.view.eventMode = 'static';
     this.view.cursor = 'pointer';
     this.view.anchor.set(0.5, 0.5);
-    this.view.on('pointerdown', this.onDragStart);
+    this.view.on('pointerdown', this._onDragStart);
   }
 
   get x(): number {
@@ -34,6 +35,14 @@ export class Karaage {
 
   set y(y: number) {
     this.view.y = y;
+  }
+
+  get zIndex(): number {
+    return this.view.zIndex;
+  }
+
+  set zIndex(zIndex: number) {
+    this.view.zIndex = zIndex;
   }
 
   get interactive(): boolean {
@@ -69,25 +78,26 @@ export class Karaage {
 
   removeFromParent = () => {
     this.view.parent.off('pointermove', this.onDragMove);
-    this.view.parent.off('pointerup', this.onDragEnd);
-    this.view.parent.off('pointerupoutside', this.onDragEnd);
+    this.view.parent.off('pointerup', this._onDragEnd);
+    this.view.parent.off('pointerupoutside', this._onDragEnd);
     this.view.parent.removeChild(this.view);
   };
 
-  private onDragStart = () => {
+  private _onDragStart = (event: FederatedPointerEvent) => {
+    this.onDragStart(this, event);
     this.view.parent.on('pointermove', this.onDragMove);
-    this.view.parent.on('pointerup', this.onDragEnd);
-    this.view.parent.on('pointerupoutside', this.onDragEnd);
+    this.view.parent.on('pointerup', this._onDragEnd);
+    this.view.parent.on('pointerupoutside', this._onDragEnd);
   };
 
   private onDragMove = (event: FederatedPointerEvent) => {
     this.view.parent.toLocal(event.global, undefined, this.view.position);
   };
 
-  private onDragEnd = async (event: FederatedPointerEvent) => {
+  private _onDragEnd = async (event: FederatedPointerEvent) => {
     this.view.parent.off('pointermove', this.onDragMove);
-    this.view.parent.off('pointerup', this.onDragEnd);
-    this.view.parent.off('pointerupoutside', this.onDragEnd);
-    this.onDragged(this, event);
+    this.view.parent.off('pointerup', this._onDragEnd);
+    this.view.parent.off('pointerupoutside', this._onDragEnd);
+    this.onDragEnd(this, event);
   };
 }
