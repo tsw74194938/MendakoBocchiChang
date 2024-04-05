@@ -84,18 +84,19 @@ async function onTouchBocchi() {
 }
 
 async function onTouchKaraageButton() {
-  isKaraageMode = !isKaraageMode;
   if (isKaraageMode) {
-    karaage.x = 250;
-    karaage.y = 80;
-    Sound.from(await Assets.load('popSound')).play();
-    app.stage.addChild(karaage);
-  } else {
     app.stage.removeChild(karaage);
     app.stage.onpointermove = null;
     app.stage.onpointerup = null;
     app.stage.onpointerupoutside = null;
   }
+
+  isKaraageMode = true;
+
+  karaage.x = 250;
+  karaage.y = 80;
+  Sound.from(await Assets.load('popSound')).play();
+  app.stage.addChild(karaage);
 }
 
 function onDragKaraageStart() {
