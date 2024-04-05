@@ -6,9 +6,10 @@ import { Bocchi } from './bocchi';
 import manifest from './manifest.json';
 
 let bocchi: Bocchi;
-let karaage: Karaage;
 let karaageButton: Sprite;
-let isKaraageMode = false;
+let karaageCount = 0;
+let isBocchiEating = false;
+const MAX_KARAAGE_COUNT = 10;
 const app = new Application();
 
 const stageWidth = (): number => {
@@ -58,13 +59,6 @@ async function init() {
   karaageButton.ontouchstart = onTouchKaraageButton;
 
   //================
-  // Karaage
-  //================
-  let karaageTexture = await Assets.load('karaage');
-  karaage = new Karaage(karaageTexture);
-  karaage.onDragged = onDragKaraageEnd;
-
-  //================
 
   const bg = Sprite.from(await Assets.load('house'));
   bg.interactive = false;
@@ -75,16 +69,24 @@ async function init() {
 }
 
 async function onTouchKaraageButton() {
-  if (isKaraageMode) {
-    karaage.removeFromParent();
+  if (karaageCount > MAX_KARAAGE_COUNT - 1) {
+    return;
   }
-  isKaraageMode = true;
+
+  let karaageTexture = await Assets.load('karaage');
+  const karaage = new Karaage(karaageTexture);
   karaage.x = 250;
   karaage.y = 80;
   karaage.addToParent(app.stage);
+  karaage.onDragged = onDragKaraageEnd;
+  karaageCount += 1;
 }
 
-async function onDragKaraageEnd(event: FederatedPointerEvent) {
+async function onDragKaraageEnd(karaage: Karaage, event: FederatedPointerEvent) {
+  if (isBocchiEating) {
+    return;
+  }
+
   const position = calcSnappedPosition(
     {
       width: stageWidth(),
@@ -97,8 +99,8 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
 
   if (bocchi.isTouched(event)) {
     // 事前処理
+    isBocchiEating = true;
     karaage.interactive = false;
-    karaageButton.interactive = false;
     bocchi.interactive = false;
 
     // 唐揚げを口に運ぶ
@@ -115,11 +117,13 @@ async function onDragKaraageEnd(event: FederatedPointerEvent) {
     karaage.removeFromParent();
     await sleep(200);
     await bocchi.pyon();
+    await sleep(200);
+
+    karaageCount -= 1;
 
     // 事後処理
-    isKaraageMode = false;
+    isBocchiEating = false;
     karaage.interactive = true;
-    karaageButton.interactive = true;
     bocchi.interactive = true;
   }
 }

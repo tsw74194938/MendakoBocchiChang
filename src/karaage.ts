@@ -7,7 +7,7 @@ import { SnapTarget } from './util';
  */
 export class Karaage {
   private view: Sprite;
-  onDragged: (event: FederatedPointerEvent) => void = (_) => {};
+  onDragged: (karaage: Karaage, event: FederatedPointerEvent) => void = (_) => {};
 
   constructor(texture: Texture) {
     this.view = Sprite.from(texture);
@@ -88,6 +88,6 @@ export class Karaage {
     this.view.parent.off('pointermove', this.onDragMove);
     this.view.parent.off('pointerup', this.onDragEnd);
     this.view.parent.off('pointerupoutside', this.onDragEnd);
-    this.onDragged(event);
+    this.onDragged(this, event);
   };
 }
