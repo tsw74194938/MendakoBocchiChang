@@ -75,8 +75,18 @@ async function onTouchKaraageButton() {
 
   let karaageTexture = await Assets.load('karaage');
   const karaage = new Karaage(karaageTexture);
-  karaage.x = 250;
   karaage.y = 80;
+
+  if (karaages.length == 0) {
+    karaage.x = 250;
+  } else {
+    const maxX = karaages
+      .filter((k) => k.y == 80)
+      .map((k) => k.x)
+      .reduce((a, b) => Math.max(a, b), 250);
+    karaage.x = maxX + 20;
+  }
+
   karaage.addToParent(app.stage);
   karaage.onDragStart = onDragKaraageStart;
   karaage.onDragMove = onDragKaraageMove;
