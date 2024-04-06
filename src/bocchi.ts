@@ -1,6 +1,7 @@
 import { Sound } from '@pixi/sound';
 import { Assets, Container, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { jump, jumpSync } from './jump';
+import { sleep } from './util';
 
 /// めんだこぼちが顔を向ける方向
 export type Direction =
@@ -30,6 +31,8 @@ export class Bocchi {
   /// 着地位置
   /// Viewはアニメーション中に位置が変わるため、Viewの位置とは別で管理する
   private _baseY: number;
+  private isKaraageWaiting: boolean = false;
+  private waitingKaraageTaskTimer: number | undefined;
 
   constructor() {
     this.view = new Sprite();
@@ -41,8 +44,8 @@ export class Bocchi {
     this.view.scale = 0.7;
     this.view.interactive = true;
 
-    this.view.on('click', this.onTouch);
-    this.view.on('touchstart', this.onTouch);
+    this.view.on('click', this.pyon);
+    this.view.on('touchstart', this.pyon);
 
     this.updateTexture();
 
@@ -90,10 +93,10 @@ export class Bocchi {
   };
 
   /**
-   * めんだこぼちにタップ値を注視させる
-   * @param event タップ位置
+   * めんだこぼちに唐揚げを注視させる
+   * @param event 唐揚げ位置
    */
-  lookAt = (event: FederatedPointerEvent) => {
+  lookAtKaraage = (event: FederatedPointerEvent) => {
     type Vertical = 'up' | 'down' | 'front';
     type Horizontal = 'front' | 'left' | 'frontleft' | 'frontright' | 'right';
     const frontAreaSide = 100;
@@ -179,12 +182,45 @@ export class Bocchi {
     })();
 
     this.direction = direction;
+
+    if (!this.waitingKaraageTaskTimer) {
+      let delay = Math.random() * 3000 + 3000;
+      this.waitingKaraageTaskTimer = setTimeout(this.waitingKaraageTask, delay);
+    }
+  };
+
+  /**
+   * 唐揚げを食べる
+   * @param 唐揚げ完食時に呼び出される
+   */
+  eatKaraage = async (onAteKaraage: () => void) => {
+    await sleep(200);
+    await this.paku();
+    await sleep(200);
+    await this.paku();
+    await sleep(200);
+    await this.paku();
+    await sleep(500);
+    onAteKaraage();
+    await sleep(200);
+    await this.pyon();
+    await sleep(200);
+    if (this.isKaraageWaiting) {
+      await this.pyon();
+      await sleep(200);
+    }
+
+    this.isKaraageWaiting = false;
+    if (this.waitingKaraageTaskTimer) {
+      clearTimeout(this.waitingKaraageTaskTimer);
+      this.waitingKaraageTaskTimer = undefined;
+    }
   };
 
   /**
    * パクッと食べる
    */
-  paku = async () => {
+  private paku = async () => {
     this.pakupakuSound?.play();
     await jumpSync(1, 8, this._baseY, (y) => {
       this.view.y = y;
@@ -195,7 +231,7 @@ export class Bocchi {
    * ぴょんっとジャンプする
    * 連続で呼び出すと、連続でジャンプする
    */
-  pyon = async () => {
+  private pyon = async () => {
     this.touchSound?.play();
     jump(1, 15, this._baseY, (y) => {
       this.view.y = y;
@@ -239,10 +275,17 @@ export class Bocchi {
   };
 
   /**
-   * ぼっちちゃんのタッチ時に呼び出される
+   * 唐揚げを見ている間に定期的に実行したいタスク
    */
-  private onTouch = () => {
-    this.direction = 'front';
-    this.pyon();
+  private waitingKaraageTask = async () => {
+    // 唐揚げを見ていたら、催促する
+    this.touchSound?.play();
+    await jumpSync(1, 15, this._baseY, (y) => {
+      this.view.y = y;
+    });
+    this.isKaraageWaiting = true;
+
+    let kimagureDelay = Math.random() * 3000 + 3000;
+    this.waitingKaraageTaskTimer = setTimeout(this.waitingKaraageTask, kimagureDelay);
   };
 }

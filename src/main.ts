@@ -1,6 +1,6 @@
 import { Application, Assets, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { config as designConfig, originalStageHeight, originalStageWidth, resizeIfNeeded } from './resize';
-import { calcSnappedPosition, sleep } from './util';
+import { calcSnappedPosition } from './util';
 import { Karaage } from './karaage';
 import { Bocchi } from './bocchi';
 import manifest from './manifest.json';
@@ -110,7 +110,7 @@ const onDragKaraageMove = async (_: Karaage, event: FederatedPointerEvent) => {
   if (isBocchiEating) {
     return;
   }
-  bocchi.lookAt(event);
+  bocchi.lookAtKaraage(event);
 };
 
 const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) => {
@@ -140,17 +140,10 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
     karaage.y = bocchi.baseY + 60;
     karaage.x = bocchi.baseX;
 
-    await sleep(200);
-    await bocchi.paku();
-    await sleep(200);
-    await bocchi.paku();
-    await sleep(200);
-    await bocchi.paku();
-    await sleep(500);
-    karaage.removeFromParent();
-    await sleep(200);
-    await bocchi.pyon();
-    await sleep(200);
+    // 唐揚げを食べる
+    bocchi.eatKaraage(() => {
+      karaage.removeFromParent();
+    });
 
     karaages = karaages.filter((k) => k !== karaage);
 
