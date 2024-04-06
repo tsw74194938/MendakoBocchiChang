@@ -8,8 +8,48 @@
           "src": "img/bocchi-house.png"
         },
         {
-          "alias": "bocchi",
-          "src": "img/bocchi-chang.png"
+          "alias": "bocchi-front",
+          "src": "img/bocchi-front.png"
+        },
+        {
+          "alias": "bocchi-frontleft",
+          "src": "img/bocchi-frontleft.png"
+        },
+        {
+          "alias": "bocchi-frontright",
+          "src": "img/bocchi-frontright.png"
+        },
+        {
+          "alias": "bocchi-up",
+          "src": "img/bocchi-up.png"
+        },
+        {
+          "alias": "bocchi-upleft",
+          "src": "img/bocchi-upleft.png"
+        },
+        {
+          "alias": "bocchi-upright",
+          "src": "img/bocchi-upright.png"
+        },
+        {
+          "alias": "bocchi-left",
+          "src": "img/bocchi-left.png"
+        },
+        {
+          "alias": "bocchi-right",
+          "src": "img/bocchi-right.png"
+        },
+        {
+          "alias": "bocchi-downleft",
+          "src": "img/bocchi-downleft.png"
+        },
+        {
+          "alias": "bocchi-downright",
+          "src": "img/bocchi-downright.png"
+        },
+        {
+          "alias": "bocchi-down",
+          "src": "img/bocchi-down.png"
         },
         {
           "alias": "karaage",

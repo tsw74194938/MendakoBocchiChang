@@ -43,8 +43,7 @@ async function init() {
   //================
   // Bocchi
   //================
-  let bocchiTexture = await Assets.load('bocchi');
-  bocchi = new Bocchi(bocchiTexture);
+  bocchi = new Bocchi();
   bocchi.baseX = stageWidth() / 2;
   bocchi.baseY = stageHeight() / 2;
 
@@ -80,6 +79,7 @@ async function onTouchKaraageButton() {
   karaage.y = 80;
   karaage.addToParent(app.stage);
   karaage.onDragStart = onDragKaraageStart;
+  karaage.onDragMove = onDragKaraageMove;
   karaage.onDragEnd = onDragKaraageEnd;
   karaages.push(karaage);
 }
@@ -94,6 +94,13 @@ const onDragKaraageStart = (karaage: Karaage, _: FederatedPointerEvent) => {
   // 手前の唐揚げとタップされた唐揚げで、zIndexを交換する
   karaages[frontmostKaraageIndex].zIndex = karaage.zIndex;
   karaage.zIndex = topZIndex;
+};
+
+const onDragKaraageMove = async (_: Karaage, event: FederatedPointerEvent) => {
+  if (isBocchiEating) {
+    return;
+  }
+  bocchi.lookAt(event);
 };
 
 const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) => {
@@ -112,6 +119,8 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
   karaage.y = position.y;
 
   if (bocchi.isTouched(event)) {
+    bocchi.direction = 'front';
+
     // 事前処理
     isBocchiEating = true;
     karaage.interactive = false;

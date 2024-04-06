@@ -8,6 +8,7 @@ import { SnapTarget } from './util';
 export class Karaage {
   private view: Sprite;
   onDragStart: (karaage: Karaage, event: FederatedPointerEvent) => void = (_) => {};
+  onDragMove: (karaage: Karaage, event: FederatedPointerEvent) => void = (_) => {};
   onDragEnd: (karaage: Karaage, event: FederatedPointerEvent) => void = (_) => {};
 
   constructor(texture: Texture) {
@@ -77,7 +78,7 @@ export class Karaage {
   };
 
   removeFromParent = () => {
-    this.view.parent.off('pointermove', this.onDragMove);
+    this.view.parent.off('pointermove', this._onDragMove);
     this.view.parent.off('pointerup', this._onDragEnd);
     this.view.parent.off('pointerupoutside', this._onDragEnd);
     this.view.parent.removeChild(this.view);
@@ -85,17 +86,18 @@ export class Karaage {
 
   private _onDragStart = (event: FederatedPointerEvent) => {
     this.onDragStart(this, event);
-    this.view.parent.on('pointermove', this.onDragMove);
+    this.view.parent.on('pointermove', this._onDragMove);
     this.view.parent.on('pointerup', this._onDragEnd);
     this.view.parent.on('pointerupoutside', this._onDragEnd);
   };
 
-  private onDragMove = (event: FederatedPointerEvent) => {
+  private _onDragMove = (event: FederatedPointerEvent) => {
+    this.onDragMove(this, event);
     this.view.parent.toLocal(event.global, undefined, this.view.position);
   };
 
   private _onDragEnd = async (event: FederatedPointerEvent) => {
-    this.view.parent.off('pointermove', this.onDragMove);
+    this.view.parent.off('pointermove', this._onDragMove);
     this.view.parent.off('pointerup', this._onDragEnd);
     this.view.parent.off('pointerupoutside', this._onDragEnd);
     this.onDragEnd(this, event);
