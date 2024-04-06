@@ -194,6 +194,11 @@ export class Bocchi {
    * @param 唐揚げ完食時に呼び出される
    */
   eatKaraage = async (onAteKaraage: () => void) => {
+    if (this.waitingKaraageTaskTimer) {
+      clearTimeout(this.waitingKaraageTaskTimer);
+      this.waitingKaraageTaskTimer = undefined;
+    }
+
     await sleep(200);
     await this.paku();
     await sleep(200);
@@ -211,10 +216,6 @@ export class Bocchi {
     }
 
     this.isKaraageWaiting = false;
-    if (this.waitingKaraageTaskTimer) {
-      clearTimeout(this.waitingKaraageTaskTimer);
-      this.waitingKaraageTaskTimer = undefined;
-    }
   };
 
   /**
