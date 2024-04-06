@@ -4,3 +4,5 @@ dist
 .vscode
 public/audio/*
 !public/audio/.gitkeep
+public/img/*
+!public/img/.gitkeep

@@ -30,8 +30,10 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - name: Download assets
+      - name: Download audios
         run: aws s3 sync s3://${{ secrets.AWS_RESOUCE_BUCKET_NAME }}/audio ./public/audio
+      - name: Download images
+        run: aws s3 sync s3://${{ secrets.AWS_RESOUCE_BUCKET_NAME }}/img ./public/img
       - name: Install dependencies
         run: npm ci
       - name: Build
