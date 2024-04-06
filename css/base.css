@@ -22,6 +22,19 @@ canvas {
   margin-right: auto;
 }
 
+h2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 2;
+}
+
+.detail {
+  padding-bottom: 2rem;
+  text-align: center;
+  line-height: 2;
+}
+
 footer {
   display: flex;
   justify-content: center;
