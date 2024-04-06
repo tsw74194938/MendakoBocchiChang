@@ -22,6 +22,8 @@ export type Direction =
 export class Bocchi {
   private view: Sprite;
   private _direction: Direction;
+  private pakupakuSound: Sound | undefined = undefined;
+  private touchSound: Sound | undefined = undefined;
   /// 着地位置
   /// Viewはアニメーション中に位置が変わるため、Viewの位置とは別で管理する
   private _baseX: number;
@@ -43,6 +45,9 @@ export class Bocchi {
     this.view.on('touchstart', this.onTouch);
 
     this.updateTexture();
+
+    Assets.load('pakupakuSound').then((a) => (this.pakupakuSound = Sound.from(a)));
+    Assets.load('touchSound').then((a) => (this.touchSound = Sound.from(a)));
   }
 
   get baseX(): number {
@@ -180,7 +185,7 @@ export class Bocchi {
    * パクッと食べる
    */
   paku = async () => {
-    Sound.from(await Assets.load('pakupakuSound')).play();
+    this.pakupakuSound?.play();
     await jumpSync(1, 8, this._baseY, (y) => {
       this.view.y = y;
     });
@@ -191,7 +196,7 @@ export class Bocchi {
    * 連続で呼び出すと、連続でジャンプする
    */
   pyon = async () => {
-    Sound.from(await Assets.load('touchSound')).play();
+    this.touchSound?.play();
     jump(1, 15, this._baseY, (y) => {
       this.view.y = y;
     });
