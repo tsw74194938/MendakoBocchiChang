@@ -75,11 +75,14 @@ const texture = (direction: Direction): Texture => {
   }
 };
 
+type UgokiState = 'ready' | 'eating' | 'jumping' | 'saisoku';
+
 /**
  * めんだこぼち
  */
 export class Bocchi {
   private view: Sprite;
+  private ugokiState: UgokiState;
   private _direction: Direction;
   /// 着地位置
   /// Viewはアニメーション中に位置が変わるため、Viewの位置とは別で管理する
@@ -88,11 +91,12 @@ export class Bocchi {
   /// Viewはアニメーション中に位置が変わるため、Viewの位置とは別で管理する
   private _baseY: number;
   private isKaraageWaiting: boolean = false;
-  private waitingKaraageTaskTimer: number | undefined;
-  private akirameTaskTimer: number | undefined;
+  private karaageSaisokuTaskTimer: number | undefined;
+  private karaageAkirameTaskTimer: number | undefined;
 
   constructor() {
     this.view = new Sprite(frontTexture);
+    this.ugokiState = 'ready';
     this._direction = 'front';
     this._baseX = this.view.x;
     this._baseY = this.view.y;
@@ -101,8 +105,8 @@ export class Bocchi {
     this.view.scale = 0.7;
     this.view.interactive = true;
 
-    this.view.on('click', this.pyon);
-    this.view.on('touchstart', this.pyon);
+    this.view.on('click', this.onTouch);
+    this.view.on('touchstart', this.onTouch);
   }
 
   get baseX(): number {
@@ -123,17 +127,13 @@ export class Bocchi {
     this.view.y = y;
   }
 
-  set direction(direction: Direction) {
+  get isEatable(): boolean {
+    return this.ugokiState == 'ready';
+  }
+
+  private set direction(direction: Direction) {
     this._direction = direction;
     this.view.texture = texture(this._direction);
-  }
-
-  get interactive(): boolean {
-    return this.view.interactive;
-  }
-
-  set interactive(interactive: boolean) {
-    this.view.interactive = interactive;
   }
 
   addToParent = (parent: Container) => {
@@ -144,17 +144,149 @@ export class Bocchi {
     return this.view.containsPoint(event.getLocalPosition(this.view, undefined, event.global));
   };
 
-  onKaraageDragMove = (event: FederatedPointerEvent) => {
-    this.lookAtKaraage(event);
-    if (!this.waitingKaraageTaskTimer) {
-      let delay = Math.random() * 3000 + 3000;
-      this.waitingKaraageTaskTimer = setTimeout(this.waitingKaraageTask, delay);
+  // SECTION: ユーザアクション
+
+  onKaraageMoving = (event: FederatedPointerEvent) => {
+    if (this.ugokiState == 'eating') {
+      return;
     }
-    if (this.akirameTaskTimer) {
-      clearTimeout(this.akirameTaskTimer);
-      this.akirameTaskTimer = undefined;
+
+    this.lookAtKaraage(event);
+
+    // 食べさせてもらえるのを諦めるのをやめる
+    if (this.karaageAkirameTaskTimer) {
+      clearTimeout(this.karaageAkirameTaskTimer);
+      this.karaageAkirameTaskTimer = undefined;
+    }
+
+    // 唐揚げを運んでいる最中に、不定期に催促する
+    // 唐揚げ持ち運び終了時に揮発する
+    if (!this.karaageSaisokuTaskTimer) {
+      let delay = Math.random() * 3000 + 3000;
+      this.karaageSaisokuTaskTimer = setTimeout(this.karaageSaisokuTask, delay);
     }
   };
+
+  onKaraageMoveEnd = () => {
+    // 唐揚げが置かれたら、もう催促はしない
+    if (this.karaageSaisokuTaskTimer) {
+      clearTimeout(this.karaageSaisokuTaskTimer);
+      this.karaageSaisokuTaskTimer = undefined;
+    }
+
+    if (this.ugokiState != 'eating') {
+      // しばらくしたら、食べさせてもらえるのを諦めて元の状態に戻る
+      // もう一度唐揚げを運び始めるか、食べ始めた際に揮発する
+      let delay = Math.random() * 1000 + 1000;
+      this.karaageAkirameTaskTimer = setTimeout(() => {
+        this.direction = 'front';
+        this.isKaraageWaiting = false;
+      }, delay);
+    }
+  };
+
+  private onTouch = async () => {
+    if (this.ugokiState == 'ready' || this.ugokiState == 'jumping') {
+      this.ugokiState = 'jumping';
+      touchSound.play();
+      jump(
+        1,
+        15,
+        this._baseY,
+        (y) => {
+          this.view.y = y;
+        },
+        () => {
+          this.ugokiState = 'ready';
+        }
+      );
+    }
+  };
+
+  /**
+   * 唐揚げを食べる
+   * @param 唐揚げ完食時に呼び出される
+   */
+  eatKaraage = async (karaage: Karaage, onAteKaraage: () => void) => {
+    if (!this.isEatable) {
+      return;
+    }
+
+    if (this.karaageAkirameTaskTimer) {
+      clearTimeout(this.karaageAkirameTaskTimer);
+      this.karaageAkirameTaskTimer = undefined;
+    }
+
+    this.ugokiState = 'eating';
+    this.direction = 'front';
+
+    // 唐揚げを口に運ぶ
+    karaage.y = this.baseY + 60;
+    karaage.x = this.baseX;
+
+    const paku = async () => {
+      pakupakuSound.play();
+      await jumpSync(1, 8, this._baseY, (y) => {
+        this.view.y = y;
+      });
+    };
+
+    const pyon = async () => {
+      touchSound.play();
+      await jumpSync(1, 15, this._baseY, (y) => {
+        this.view.y = y;
+      });
+    };
+
+    await sleep(200);
+    await paku();
+    await sleep(200);
+    await paku();
+    await sleep(200);
+    await paku();
+    await sleep(500);
+    onAteKaraage();
+    await sleep(200);
+    await pyon();
+    if (this.isKaraageWaiting) {
+      await pyon();
+    }
+    await sleep(200);
+
+    this.isKaraageWaiting = false;
+    this.ugokiState = 'ready';
+  };
+
+  // SECTION: 非同期実行アクション
+
+  /**
+   * 唐揚げを見ている間に定期的に実行したいタスク
+   */
+  private karaageSaisokuTask = async () => {
+    if (this.ugokiState != 'ready') {
+      let kimagureDelay = Math.random() * 3000 + 3000;
+      this.karaageSaisokuTaskTimer = setTimeout(this.karaageSaisokuTask, kimagureDelay);
+      return;
+    }
+
+    this.ugokiState = 'saisoku';
+    // 唐揚げを見ていたら、催促する
+    let jumpCount = Math.floor(Math.random() * 2) + 1;
+    for (let i = 0; i < jumpCount; i++) {
+      touchSound.play();
+      await jumpSync(1, 15, this._baseY, (y) => {
+        this.view.y = y;
+      });
+      await sleep(200);
+    }
+    this.isKaraageWaiting = true;
+    this.ugokiState = 'ready';
+
+    let kimagureDelay = Math.random() * 3000 + 3000;
+    this.karaageSaisokuTaskTimer = setTimeout(this.karaageSaisokuTask, kimagureDelay);
+  };
+
+  // SECTION: その他
 
   /**
    * めんだこぼちに唐揚げを注視させる
@@ -246,95 +378,5 @@ export class Bocchi {
     })();
 
     this.direction = direction;
-  };
-
-  onKaraageDragEnd = () => {
-    if (this.waitingKaraageTaskTimer) {
-      clearTimeout(this.waitingKaraageTaskTimer);
-      this.waitingKaraageTaskTimer = undefined;
-    }
-
-    let akirameDelay = Math.random() * 1000 + 1000;
-    this.akirameTaskTimer = setTimeout(() => {
-      this.direction = 'front';
-      this.isKaraageWaiting = false;
-    }, akirameDelay);
-  };
-
-  /**
-   * 唐揚げを食べる
-   * @param 唐揚げ完食時に呼び出される
-   */
-  eatKaraage = async (karaage: Karaage, onAteKaraage: () => void) => {
-    if (this.akirameTaskTimer) {
-      clearTimeout(this.akirameTaskTimer);
-      this.akirameTaskTimer = undefined;
-    }
-
-    this.direction = 'front';
-
-    // 唐揚げを口に運ぶ
-    karaage.y = this.baseY + 60;
-    karaage.x = this.baseX;
-
-    await sleep(200);
-    await this.paku();
-    await sleep(200);
-    await this.paku();
-    await sleep(200);
-    await this.paku();
-    await sleep(500);
-    onAteKaraage();
-    await sleep(200);
-    await this.pyon();
-    await sleep(200);
-    if (this.isKaraageWaiting) {
-      await this.pyon();
-      await sleep(200);
-    }
-
-    this.isKaraageWaiting = false;
-  };
-
-  /**
-   * パクッと食べる
-   */
-  private paku = async () => {
-    pakupakuSound.play();
-    await jumpSync(1, 8, this._baseY, (y) => {
-      this.view.y = y;
-    });
-  };
-
-  /**
-   * ぴょんっとジャンプする
-   * 連続で呼び出すと、連続でジャンプする
-   */
-  private pyon = async () => {
-    touchSound.play();
-    jump(1, 15, this._baseY, (y) => {
-      this.view.y = y;
-    });
-  };
-
-  /**
-   * 唐揚げを見ている間に定期的に実行したいタスク
-   */
-  private waitingKaraageTask = async () => {
-    this.view.interactive = false;
-    // 唐揚げを見ていたら、催促する
-    let jumpCount = Math.floor(Math.random() * 2) + 1;
-    for (let i = 0; i < jumpCount; i++) {
-      touchSound.play();
-      await jumpSync(1, 15, this._baseY, (y) => {
-        this.view.y = y;
-      });
-      await sleep(200);
-    }
-    this.isKaraageWaiting = true;
-    this.view.interactive = true;
-
-    let kimagureDelay = Math.random() * 3000 + 3000;
-    this.waitingKaraageTaskTimer = setTimeout(this.waitingKaraageTask, kimagureDelay);
   };
 }

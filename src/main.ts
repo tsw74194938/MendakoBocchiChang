@@ -11,7 +11,6 @@ let karaageButton: Button;
 // zIndexを操作した時、唐揚げが他の要素の裏に回らないようにするためのコンテナ
 let karaageContainer: Container;
 let karaages: Karaage[] = [];
-let isBocchiEating = false;
 const MAX_KARAAGE_COUNT = 10;
 const app = new Application();
 
@@ -98,17 +97,10 @@ const onDragKaraageStart = (karaage: Karaage, _: FederatedPointerEvent) => {
 };
 
 const onDragKaraageMove = async (_: Karaage, event: FederatedPointerEvent) => {
-  if (isBocchiEating) {
-    return;
-  }
-  bocchi.onKaraageDragMove(event);
+  bocchi.onKaraageMoving(event);
 };
 
 const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) => {
-  if (isBocchiEating) {
-    return;
-  }
-
   const position = calcSnappedPosition(
     {
       width: stageWidth(),
@@ -119,16 +111,12 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
   karaage.x = position.x;
   karaage.y = position.y;
 
-  bocchi.onKaraageDragEnd();
-  if (bocchi.isTouched(event)) {
+  bocchi.onKaraageMoveEnd();
+  if (bocchi.isTouched(event) && bocchi.isEatable) {
     bringToBackward(karaage, karaages);
 
-    // 事前処理
-    isBocchiEating = true;
     karaage.interactive = false;
-    bocchi.interactive = false;
 
-    // 唐揚げを食べる
     await bocchi.eatKaraage(karaage, () => {
       karaage.removeFromParent();
       karaageButton.isEnabled = true;
@@ -136,10 +124,7 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
 
     karaages = karaages.filter((k) => k !== karaage);
 
-    // 事後処理
-    isBocchiEating = false;
     karaage.interactive = true;
-    bocchi.interactive = true;
   }
 };
 

@@ -11,9 +11,16 @@ let tick: (ticker: Ticker) => void = () => {};
  * @param power 初速
  * @param baseY ジャンプ開始時のY座標
  * @param updateY Y座標実行時に呼び出されるクロージャ
+ * @param onComplete 終了時に呼び出されるクロージャ
  */
-export const jump = (gravity: number, power: number, baseY: number, updateY: (y: number) => void) => {
-  _jump(gravity, power, baseY, updateY, () => {});
+export const jump = (
+  gravity: number,
+  power: number,
+  baseY: number,
+  updateY: (y: number) => void,
+  onComplete: () => void = () => {}
+) => {
+  _jump(gravity, power, baseY, updateY, onComplete);
 };
 
 /**
