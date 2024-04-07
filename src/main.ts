@@ -141,7 +141,7 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
     karaage.x = bocchi.baseX;
 
     // 唐揚げを食べる
-    bocchi.eatKaraage(() => {
+    await bocchi.eatKaraage(() => {
       karaage.removeFromParent();
     });
 
