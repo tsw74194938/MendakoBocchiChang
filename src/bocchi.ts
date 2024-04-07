@@ -1,5 +1,5 @@
 import { Sound } from '@pixi/sound';
-import { Assets, Container, FederatedPointerEvent, Sprite } from 'pixi.js';
+import { Assets, Container, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
 import { jump, jumpSync } from './jump';
 import { sleep } from './util';
 import { Karaage } from './karaage';
@@ -18,14 +18,69 @@ export type Direction =
   | 'downleft'
   | 'downright';
 
+let upTexture: Texture;
+let upLeftTexture: Texture;
+let upRightTexture: Texture;
+let frontTexture: Texture;
+let frontRightTexture: Texture;
+let frontLeftTexture: Texture;
+let leftTexture: Texture;
+let rightTexture: Texture;
+let downTexture: Texture;
+let downLeftTexture: Texture;
+let downRightTexture: Texture;
+let pakupakuSound: Sound;
+let touchSound: Sound;
+
+export const loadBocchiAssets = async () => {
+  upTexture = await Assets.load('bocchi-up');
+  upLeftTexture = await Assets.load('bocchi-upleft');
+  upRightTexture = await Assets.load('bocchi-upright');
+  frontTexture = await Assets.load('bocchi-front');
+  frontRightTexture = await Assets.load('bocchi-frontright');
+  frontLeftTexture = await Assets.load('bocchi-frontleft');
+  leftTexture = await Assets.load('bocchi-left');
+  rightTexture = await Assets.load('bocchi-right');
+  downTexture = await Assets.load('bocchi-down');
+  downRightTexture = await Assets.load('bocchi-downright');
+  downLeftTexture = await Assets.load('bocchi-downleft');
+  pakupakuSound = await Assets.load('pakupakuSound');
+  touchSound = await Assets.load('touchSound');
+};
+
+const texture = (direction: Direction): Texture => {
+  switch (direction) {
+    case 'up':
+      return upTexture;
+    case 'upleft':
+      return upLeftTexture;
+    case 'upright':
+      return upRightTexture;
+    case 'front':
+      return frontTexture;
+    case 'frontleft':
+      return frontLeftTexture;
+    case 'frontright':
+      return frontRightTexture;
+    case 'left':
+      return leftTexture;
+    case 'right':
+      return rightTexture;
+    case 'down':
+      return downTexture;
+    case 'downleft':
+      return downLeftTexture;
+    case 'downright':
+      return downRightTexture;
+  }
+};
+
 /**
  * めんだこぼち
  */
 export class Bocchi {
   private view: Sprite;
   private _direction: Direction;
-  private pakupakuSound: Sound | undefined = undefined;
-  private touchSound: Sound | undefined = undefined;
   /// 着地位置
   /// Viewはアニメーション中に位置が変わるため、Viewの位置とは別で管理する
   private _baseX: number;
@@ -37,7 +92,7 @@ export class Bocchi {
   private akirameTaskTimer: number | undefined;
 
   constructor() {
-    this.view = new Sprite();
+    this.view = new Sprite(frontTexture);
     this._direction = 'front';
     this._baseX = this.view.x;
     this._baseY = this.view.y;
@@ -48,11 +103,6 @@ export class Bocchi {
 
     this.view.on('click', this.pyon);
     this.view.on('touchstart', this.pyon);
-
-    this.updateTexture();
-
-    Assets.load('pakupakuSound').then((a) => (this.pakupakuSound = Sound.from(a)));
-    Assets.load('touchSound').then((a) => (this.touchSound = Sound.from(a)));
   }
 
   get baseX(): number {
@@ -75,7 +125,7 @@ export class Bocchi {
 
   set direction(direction: Direction) {
     this._direction = direction;
-    this.updateTexture();
+    this.view.texture = texture(this._direction);
   }
 
   get interactive(): boolean {
@@ -250,7 +300,7 @@ export class Bocchi {
    * パクッと食べる
    */
   private paku = async () => {
-    this.pakupakuSound?.play();
+    pakupakuSound.play();
     await jumpSync(1, 8, this._baseY, (y) => {
       this.view.y = y;
     });
@@ -261,46 +311,10 @@ export class Bocchi {
    * 連続で呼び出すと、連続でジャンプする
    */
   private pyon = async () => {
-    this.touchSound?.play();
+    touchSound.play();
     jump(1, 15, this._baseY, (y) => {
       this.view.y = y;
     });
-  };
-
-  private updateTexture = () => {
-    const textureName = this.textureName(this._direction);
-    Assets.load(textureName).then((t) => {
-      this.view.texture = t;
-    });
-  };
-
-  private textureName = (direction: Direction): string => {
-    switch (direction) {
-      case 'up':
-        return 'bocchi-up';
-      case 'upleft':
-        return 'bocchi-upleft';
-      case 'upright':
-        return 'bocchi-upright';
-      case 'front':
-        return 'bocchi-front';
-      case 'frontleft':
-        return 'bocchi-frontleft';
-      case 'frontright':
-        return 'bocchi-frontright';
-      case 'left':
-        return 'bocchi-left';
-      case 'right':
-        return 'bocchi-right';
-      case 'down':
-        return 'bocchi-down';
-      case 'downleft':
-        return 'bocchi-downleft';
-      case 'downright':
-        return 'bocchi-downright';
-      default:
-        return 'bocchi-front';
-    }
   };
 
   /**
@@ -310,7 +324,7 @@ export class Bocchi {
     // 唐揚げを見ていたら、催促する
     let jumpCount = Math.floor(Math.random() * 2) + 1;
     for (let i = 0; i < jumpCount; i++) {
-      this.touchSound?.play();
+      touchSound.play();
       await jumpSync(1, 15, this._baseY, (y) => {
         this.view.y = y;
       });

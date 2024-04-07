@@ -2,7 +2,7 @@ import { Application, Assets, Container, FederatedPointerEvent, Sprite } from 'p
 import { config as designConfig, originalStageHeight, originalStageWidth, resizeIfNeeded } from './resize';
 import { bringToBackward, bringToForward, calcSnappedPosition } from './util';
 import { Karaage } from './karaage';
-import { Bocchi } from './bocchi';
+import { Bocchi, loadBocchiAssets } from './bocchi';
 import manifest from './manifest.json';
 import { Button } from './button';
 
@@ -36,7 +36,8 @@ async function init() {
   // アセット群を事前に読み込む
   // SeeAlso: https://pixijs.com/8.x/guides/components/assets
   await Assets.init({ manifest: manifest });
-  Assets.backgroundLoadBundle(['main']);
+  await Assets.loadBundle(['main']);
+  await loadBocchiAssets();
 
   resizeIfNeeded(app);
   window.addEventListener('resize', (_) => {
