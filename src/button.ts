@@ -5,13 +5,25 @@ import { Container, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
  */
 export class Button {
   private view: Sprite;
+  private _scale: number;
   onTap: (button: Button, event: FederatedPointerEvent) => void = () => {};
 
   constructor(texture: Texture) {
     this.view = Sprite.from(texture);
     this.view.interactive = true;
-    this.view.onclick = this._onTap;
-    this.view.ontouchstart = this._onTap;
+    this.view.anchor.set(0.5, 0.5);
+    this._scale = this.view.scale.x;
+
+    this.view.onpointerdown = () => {
+      this.view.scale = this._scale * 0.9;
+    };
+    this.view.onpointerup = (event: FederatedPointerEvent) => {
+      this.onTap(this, event);
+      this.view.scale = this._scale * 1;
+    };
+    this.view.onpointerupoutside = () => {
+      this.view.scale = this._scale * 1;
+    };
   }
 
   get x(): number {
@@ -31,6 +43,7 @@ export class Button {
   }
 
   set scale(scale: number) {
+    this._scale = scale;
     this.view.scale = scale;
   }
 

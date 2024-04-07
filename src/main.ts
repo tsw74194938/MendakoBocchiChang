@@ -56,8 +56,8 @@ async function init() {
   const buttonTexture = await Assets.load('karaageButton');
   karaageButton = new Button(buttonTexture);
   karaageButton.scale = 0.5;
-  karaageButton.x = 18;
-  karaageButton.y = 18;
+  karaageButton.x = 100;
+  karaageButton.y = 80;
   karaageButton.onTap = onTouchKaraageButton;
 
   karaageContainer = new Container();
@@ -140,6 +140,7 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
     // 唐揚げを食べる
     await bocchi.eatKaraage(() => {
       karaage.removeFromParent();
+      karaageButton.isEnabled = true;
     });
 
     karaages = karaages.filter((k) => k !== karaage);
@@ -148,7 +149,6 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
     isBocchiEating = false;
     karaage.interactive = true;
     bocchi.interactive = true;
-    karaageButton.isEnabled = true;
   }
 };
 
