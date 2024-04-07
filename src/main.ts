@@ -106,7 +106,7 @@ const onDragKaraageMove = async (_: Karaage, event: FederatedPointerEvent) => {
   if (isBocchiEating) {
     return;
   }
-  bocchi.lookAtKaraage(event);
+  bocchi.onKaraageDragMove(event);
 };
 
 const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) => {
@@ -124,21 +124,17 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
   karaage.x = position.x;
   karaage.y = position.y;
 
+  bocchi.onKaraageDragEnd();
   if (bocchi.isTouched(event)) {
     bringToBackward(karaage, karaages);
-    bocchi.direction = 'front';
 
     // 事前処理
     isBocchiEating = true;
     karaage.interactive = false;
     bocchi.interactive = false;
 
-    // 唐揚げを口に運ぶ
-    karaage.y = bocchi.baseY + 60;
-    karaage.x = bocchi.baseX;
-
     // 唐揚げを食べる
-    await bocchi.eatKaraage(() => {
+    await bocchi.eatKaraage(karaage, () => {
       karaage.removeFromParent();
       karaageButton.isEnabled = true;
     });

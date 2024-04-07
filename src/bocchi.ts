@@ -2,6 +2,7 @@ import { Sound } from '@pixi/sound';
 import { Assets, Container, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { jump, jumpSync } from './jump';
 import { sleep } from './util';
+import { Karaage } from './karaage';
 
 /// めんだこぼちが顔を向ける方向
 export type Direction =
@@ -33,6 +34,7 @@ export class Bocchi {
   private _baseY: number;
   private isKaraageWaiting: boolean = false;
   private waitingKaraageTaskTimer: number | undefined;
+  private akirameTaskTimer: number | undefined;
 
   constructor() {
     this.view = new Sprite();
@@ -92,11 +94,23 @@ export class Bocchi {
     return this.view.containsPoint(event.getLocalPosition(this.view, undefined, event.global));
   };
 
+  onKaraageDragMove = (event: FederatedPointerEvent) => {
+    this.lookAtKaraage(event);
+    if (!this.waitingKaraageTaskTimer) {
+      let delay = Math.random() * 3000 + 3000;
+      this.waitingKaraageTaskTimer = setTimeout(this.waitingKaraageTask, delay);
+    }
+    if (this.akirameTaskTimer) {
+      clearTimeout(this.akirameTaskTimer);
+      this.akirameTaskTimer = undefined;
+    }
+  };
+
   /**
    * めんだこぼちに唐揚げを注視させる
    * @param event 唐揚げ位置
    */
-  lookAtKaraage = (event: FederatedPointerEvent) => {
+  private lookAtKaraage = (event: FederatedPointerEvent) => {
     type Vertical = 'up' | 'down' | 'front';
     type Horizontal = 'front' | 'left' | 'frontleft' | 'frontright' | 'right';
     const frontAreaSide = 100;
@@ -182,22 +196,36 @@ export class Bocchi {
     })();
 
     this.direction = direction;
+  };
 
-    if (!this.waitingKaraageTaskTimer) {
-      let delay = Math.random() * 3000 + 3000;
-      this.waitingKaraageTaskTimer = setTimeout(this.waitingKaraageTask, delay);
+  onKaraageDragEnd = () => {
+    if (this.waitingKaraageTaskTimer) {
+      clearTimeout(this.waitingKaraageTaskTimer);
+      this.waitingKaraageTaskTimer = undefined;
     }
+
+    let akirameDelay = Math.random() * 1000 + 1000;
+    this.akirameTaskTimer = setTimeout(() => {
+      this.direction = 'front';
+      this.isKaraageWaiting = false;
+    }, akirameDelay);
   };
 
   /**
    * 唐揚げを食べる
    * @param 唐揚げ完食時に呼び出される
    */
-  eatKaraage = async (onAteKaraage: () => void) => {
-    if (this.waitingKaraageTaskTimer) {
-      clearTimeout(this.waitingKaraageTaskTimer);
-      this.waitingKaraageTaskTimer = undefined;
+  eatKaraage = async (karaage: Karaage, onAteKaraage: () => void) => {
+    if (this.akirameTaskTimer) {
+      clearTimeout(this.akirameTaskTimer);
+      this.akirameTaskTimer = undefined;
     }
+
+    this.direction = 'front';
+
+    // 唐揚げを口に運ぶ
+    karaage.y = this.baseY + 60;
+    karaage.x = this.baseX;
 
     await sleep(200);
     await this.paku();
