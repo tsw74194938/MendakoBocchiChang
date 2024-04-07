@@ -1,12 +1,14 @@
-import { Application, Assets, FederatedPointerEvent, Sprite } from 'pixi.js';
+import { Application, Assets, Container, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { config as designConfig, originalStageHeight, originalStageWidth, resizeIfNeeded } from './resize';
-import { calcSnappedPosition } from './util';
+import { bringToBackward, bringToForward, calcSnappedPosition } from './util';
 import { Karaage } from './karaage';
 import { Bocchi } from './bocchi';
 import manifest from './manifest.json';
 
 let bocchi: Bocchi;
 let karaageButton: Sprite;
+// zIndexを操作した時、唐揚げが他の要素の裏に回らないようにするためのコンテナ
+let karaageContainer: Container;
 let karaages: Karaage[] = [];
 let isBocchiEating = false;
 const MAX_KARAAGE_COUNT = 10;
@@ -58,7 +60,8 @@ async function init() {
   karaageButton.onclick = onTouchKaraageButton;
   karaageButton.ontouchstart = onTouchKaraageButton;
 
-  //================
+  karaageContainer = new Container();
+  karaageContainer.interactive = true;
 
   const bg = Sprite.from(await Assets.load('house'));
   bg.interactive = false;
@@ -66,6 +69,7 @@ async function init() {
 
   bocchi.addToParent(app.stage);
   app.stage.addChild(karaageButton);
+  app.stage.addChild(karaageContainer);
 }
 
 async function onTouchKaraageButton() {
@@ -87,7 +91,7 @@ async function onTouchKaraageButton() {
     karaage.x = maxX + 20;
   }
 
-  karaage.addToParent(app.stage);
+  karaage.addToParent(karaageContainer);
   karaage.onDragStart = onDragKaraageStart;
   karaage.onDragMove = onDragKaraageMove;
   karaage.onDragEnd = onDragKaraageEnd;
@@ -95,15 +99,7 @@ async function onTouchKaraageButton() {
 }
 
 const onDragKaraageStart = (karaage: Karaage, _: FederatedPointerEvent) => {
-  const zIndices = karaages.map((k) => k.zIndex);
-  const frontmostKaraageIndex = zIndices.indexOf(Math.max(...zIndices));
-
-  // デフォルトだとzIndexは0なので、最も手前のzIndex値が0だった場合は、1にすることで最前面に来るようにする
-  const topZIndex = karaages[frontmostKaraageIndex].zIndex == 0 ? 1 : karaages[frontmostKaraageIndex].zIndex;
-
-  // 手前の唐揚げとタップされた唐揚げで、zIndexを交換する
-  karaages[frontmostKaraageIndex].zIndex = karaage.zIndex;
-  karaage.zIndex = topZIndex;
+  bringToForward(karaage, karaages);
 };
 
 const onDragKaraageMove = async (_: Karaage, event: FederatedPointerEvent) => {
@@ -129,6 +125,7 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
   karaage.y = position.y;
 
   if (bocchi.isTouched(event)) {
+    bringToBackward(karaage, karaages);
     bocchi.direction = 'front';
 
     // 事前処理

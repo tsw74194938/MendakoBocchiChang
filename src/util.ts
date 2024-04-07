@@ -21,6 +21,13 @@ export type SnapTarget = {
 };
 
 /**
+ * zIndexをソート可能なI/F
+ */
+export interface ZSortable {
+  zIndex: number;
+}
+
+/**
  * sleepする
  * @param milliseconds sleepするミリ秒
  */
@@ -45,4 +52,26 @@ export const calcSnappedPosition = (frame: Size, target: SnapTarget): Point => {
       frame.height - target.size.height * (1 - target.anchor.y)
     ),
   };
+};
+
+/**
+ * アイテムを最前面に持っていく
+ * @param target 手前に持ってくる対象のアイテム
+ * @param items 並び替え対象のアイテム群
+ */
+export const bringToForward = (target: ZSortable, items: ZSortable[]) => {
+  const zIndices = items.map((i) => i.zIndex);
+  const frontmostItemIndex = zIndices.indexOf(Math.max(...zIndices));
+  target.zIndex = items[frontmostItemIndex].zIndex + 1;
+};
+
+/**
+ * アイテムを最奥に持っていく
+ * @param target 最奥に持っていく対象のアイテム
+ * @param itemsa 並び替え対象のアイテム群
+ */
+export const bringToBackward = (target: ZSortable, items: ZSortable[]) => {
+  const zIndices = items.map((i) => i.zIndex);
+  const backmostItemIndex = zIndices.indexOf(Math.min(...zIndices));
+  target.zIndex = items[backmostItemIndex].zIndex - 1;
 };
