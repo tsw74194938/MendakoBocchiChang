@@ -321,6 +321,7 @@ export class Bocchi {
    * 唐揚げを見ている間に定期的に実行したいタスク
    */
   private waitingKaraageTask = async () => {
+    this.view.interactive = false;
     // 唐揚げを見ていたら、催促する
     let jumpCount = Math.floor(Math.random() * 2) + 1;
     for (let i = 0; i < jumpCount; i++) {
@@ -330,6 +331,7 @@ export class Bocchi {
       });
     }
     this.isKaraageWaiting = true;
+    this.view.interactive = true;
 
     let kimagureDelay = Math.random() * 3000 + 3000;
     this.waitingKaraageTaskTimer = setTimeout(this.waitingKaraageTask, kimagureDelay);
