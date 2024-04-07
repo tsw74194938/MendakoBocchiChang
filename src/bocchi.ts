@@ -5,7 +5,7 @@ import { sleep } from './util';
 import { Karaage } from './karaage';
 
 /// めんだこぼちが顔を向ける方向
-export type Direction =
+type Direction =
   | 'up'
   | 'upleft'
   | 'upright'
