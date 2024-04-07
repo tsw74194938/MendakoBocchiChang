@@ -4,9 +4,10 @@ import { bringToBackward, bringToForward, calcSnappedPosition } from './util';
 import { Karaage } from './karaage';
 import { Bocchi } from './bocchi';
 import manifest from './manifest.json';
+import { Button } from './button';
 
 let bocchi: Bocchi;
-let karaageButton: Sprite;
+let karaageButton: Button;
 // zIndexを操作した時、唐揚げが他の要素の裏に回らないようにするためのコンテナ
 let karaageContainer: Container;
 let karaages: Karaage[] = [];
@@ -52,13 +53,12 @@ async function init() {
   //================
   // KaraageButton
   //================
-  karaageButton = Sprite.from(await Assets.load('karaageButton'));
+  const buttonTexture = await Assets.load('karaageButton');
+  karaageButton = new Button(buttonTexture);
   karaageButton.scale = 0.5;
-  karaageButton.interactive = true;
   karaageButton.x = 18;
   karaageButton.y = 18;
-  karaageButton.onclick = onTouchKaraageButton;
-  karaageButton.ontouchstart = onTouchKaraageButton;
+  karaageButton.onTap = onTouchKaraageButton;
 
   karaageContainer = new Container();
   karaageContainer.interactive = true;
@@ -68,7 +68,7 @@ async function init() {
   app.stage.addChild(bg);
 
   bocchi.addToParent(app.stage);
-  app.stage.addChild(karaageButton);
+  karaageButton.addToParent(app.stage);
   app.stage.addChild(karaageContainer);
 }
 
