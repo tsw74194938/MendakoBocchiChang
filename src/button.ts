@@ -55,8 +55,4 @@ export class Button {
   addToParent = async (parent: Container) => {
     parent.addChild(this.view);
   };
-
-  private _onTap = (event: FederatedPointerEvent) => {
-    this.onTap(this, event);
-  };
 }
