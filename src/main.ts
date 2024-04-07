@@ -44,16 +44,10 @@ async function init() {
     resizeIfNeeded(app);
   });
 
-  //================
-  // Bocchi
-  //================
   bocchi = new Bocchi();
   bocchi.baseX = stageWidth() / 2;
   bocchi.baseY = stageHeight() / 2;
 
-  //================
-  // KaraageButton
-  //================
   const buttonTexture = await Assets.load('karaageButton');
   karaageButton = new Button(buttonTexture);
   karaageButton.scale = 0.5;
