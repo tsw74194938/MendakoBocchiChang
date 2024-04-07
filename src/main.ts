@@ -72,11 +72,7 @@ async function init() {
   app.stage.addChild(karaageContainer);
 }
 
-async function onTouchKaraageButton() {
-  if (karaages.length > MAX_KARAAGE_COUNT - 1) {
-    return;
-  }
-
+async function onTouchKaraageButton(button: Button) {
   let karaageTexture = await Assets.load('karaage');
   const karaage = new Karaage(karaageTexture);
   karaage.y = 80;
@@ -96,6 +92,10 @@ async function onTouchKaraageButton() {
   karaage.onDragMove = onDragKaraageMove;
   karaage.onDragEnd = onDragKaraageEnd;
   karaages.push(karaage);
+
+  if (karaages.length > MAX_KARAAGE_COUNT - 1) {
+    button.isEnabled = false;
+  }
 }
 
 const onDragKaraageStart = (karaage: Karaage, _: FederatedPointerEvent) => {
@@ -148,6 +148,7 @@ const onDragKaraageEnd = async (karaage: Karaage, event: FederatedPointerEvent) 
     isBocchiEating = false;
     karaage.interactive = true;
     bocchi.interactive = true;
+    karaageButton.isEnabled = true;
   }
 };
 

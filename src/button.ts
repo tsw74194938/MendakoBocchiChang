@@ -34,6 +34,11 @@ export class Button {
     this.view.scale = scale;
   }
 
+  set isEnabled(isEnabled: boolean) {
+    this.view.alpha = isEnabled ? 1 : 0.6;
+    this.view.interactive = isEnabled;
+  }
+
   addToParent = async (parent: Container) => {
     parent.addChild(this.view);
   };
