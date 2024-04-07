@@ -308,10 +308,13 @@ export class Bocchi {
    */
   private waitingKaraageTask = async () => {
     // 唐揚げを見ていたら、催促する
-    this.touchSound?.play();
-    await jumpSync(1, 15, this._baseY, (y) => {
-      this.view.y = y;
-    });
+    let jumpCount = Math.floor(Math.random() * 2) + 1;
+    for (let i = 0; i < jumpCount; i++) {
+      this.touchSound?.play();
+      await jumpSync(1, 15, this._baseY, (y) => {
+        this.view.y = y;
+      });
+    }
     this.isKaraageWaiting = true;
 
     let kimagureDelay = Math.random() * 3000 + 3000;
