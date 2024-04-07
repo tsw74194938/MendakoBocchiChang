@@ -329,6 +329,7 @@ export class Bocchi {
       await jumpSync(1, 15, this._baseY, (y) => {
         this.view.y = y;
       });
+      await sleep(200);
     }
     this.isKaraageWaiting = true;
     this.view.interactive = true;
